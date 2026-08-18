@@ -12,23 +12,23 @@ export async function POST(req: NextRequest) {
 
     const { email, password } = await req.json();
 
-    const errors: Record<string, string> = {};
 
     // Validate input
     if (!email) {
-      errors.email = "Email is required";
-    }
-
-    if (!password) {
-      errors.password = "Password is required";
-    }
-
-    if (Object.keys(errors).length > 0) {
       return NextResponse.json(
-        { message:"email,password" },
+        { message:"Email is required" },
         { status: 400 }
       );
     }
+
+    if (!password) {
+      return NextResponse.json(
+        { message:"Password is required" },
+        { status: 400 }
+      );
+    }
+
+    
 
     // Find user
     const user = await User.findOne({ email });

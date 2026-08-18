@@ -19,12 +19,10 @@ import {
   ExternalLink,
   Phone,
   Mail,
-  MapPin,
-  Globe,
   Check,
   Camera,
   Copy,
-  Radio,
+  CircleUserRound,
   X,
   Palette,
 } from "lucide-react";
@@ -98,26 +96,8 @@ const THEMES: Record<string, Theme> = {
 export default function NxtCardApp() {
   const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL;
   const FRONTEND_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
-  // const userData = useAppSelector(
-  //   (state: RootState) => state?.user?.userData ?? null,
-  // ) as {
-  //   userName?: string;
-  //   email?: string;
-  //   mobile?: string;
-  //   image?: string;
-  //   isEditInfo?: boolean;
-  //   info?: {
-  //     title?: string;
-  //     company?: string;
-  //     city?: string;
-  //     bio?: string;
-  //   };
-  //   socialMedia?: {
-  //     website?: string;
-  //   };
-  // } | null;
-  
-  const  userData  = useSelector((state: RootState) => state.user.userData) as {
+
+  const userData = useSelector((state: RootState) => state.user.userData) as {
     userName?: string;
     email?: string;
     mobile?: string;
@@ -131,28 +111,27 @@ export default function NxtCardApp() {
     };
     socialMedia?: {
       website?: string;
+      linkedin?: string;
+      github?: string;
     };
   } | null;
 
-  
-  
   const [themeKey, setThemeKey] = useState<string>("obsidian");
   const [isFlipped, setIsFlipped] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(userData?.isEditInfo);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const [copied, setCopied] = useState(false);
   //logout
   const [loading, setLoading] = useState(false);
-  const dispatch = useDispatch<AppDispatch>()
+  const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const handleClick = async () => {
     setLoading(true);
     try {
-      const result = await axios.get(
-        `${NEXT_PUBLIC_API_URL as string}/auth/logout`,
-        { withCredentials: true },
-      );
+      const result = await axios.post(`api/auth/logout`, {
+        withCredentials: true,
+      });
       dispatch(logout());
       setLoading(false);
       toast.success("logout successful!");
@@ -175,13 +154,15 @@ export default function NxtCardApp() {
     email: userData?.email || "---",
     phone: userData?.mobile || "---",
     website: userData?.socialMedia?.website || "---",
+    github: userData?.socialMedia?.github || "---",
+    linkedin: userData?.socialMedia?.linkedin || "---",
+
     location: userData?.info?.city,
     bio: userData?.info?.bio,
     avatarUrl:
       userData?.image ||
       "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=600",
   };
-
 
   const GithubIcon = ({ className }: { className?: string }) => (
     <svg
@@ -248,13 +229,13 @@ export default function NxtCardApp() {
     {
       label: "LinkedIn",
       icon: LinkedinIcon,
-      url: "https://linkedin.com",
+      url: profile.linkedin,
       color: "hover:text-blue-400",
     },
     {
       label: "GitHub",
       icon: GithubIcon,
-      url: "https://github.com",
+      url: profile.github,
       color: "hover:text-neutral-200",
     },
     {
@@ -362,9 +343,16 @@ END:VCARD`;
       <div className="relative z-10 w-full max-w-md flex flex-col items-center gap-6">
         {/* Top Header Controls */}
         <header className="w-full flex items-center justify-between px-2">
-          <div className="flex items-center gap-2 font-mono text-sm tracking-wider uppercase text-neutral-400">
-            <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
-            <span>NFC ACTIVE</span>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-amber-400/10 border border-amber-400/20">
+              <div className="relative">
+                <CircleUserRound className="w-5 h-5 text-cyan-400" />
+              </div>
+            </div>
+
+            <span className="font-mono text-xs font-semibold tracking-[0.18em] uppercase text-neutral-300">
+              Digital ID
+            </span>
           </div>
 
           <div className="flex items-center gap-2 bg-neutral-900/80 backdrop-blur-md border border-white/10 rounded-full p-1.5 px-3">
@@ -509,11 +497,25 @@ END:VCARD`;
                 </div>
 
                 <div className="flex flex-col items-end">
-                  <span
-                    className={`text-[10px] font-mono uppercase px-2 py-0.5 rounded-md border ${activeTheme.badge}`}
+                  <div
+                    className={`relative p-2 rounded-xl border backdrop-blur-md ${activeTheme.badge}`}
                   >
-                    NXT PASS
-                  </span>
+                    {/* Glow */}
+                    <div className="absolute inset-0 rounded-xl bg-cyan-400/10 blur-xl" />
+
+                    {/* QR container */}
+                    <div className="relative p-1.5 bg-white rounded-lg shadow-lg">
+                      <QRCodeSVG
+                        value={profile.website}
+                        size={100}
+                        level="H"
+                        bgColor="#ffffff"
+                        fgColor="#08080c"
+                      />
+                    </div>
+
+                    {/* Scan indicator */}
+                  </div>
                 </div>
               </div>
 

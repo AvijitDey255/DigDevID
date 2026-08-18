@@ -1,5 +1,5 @@
 // user.ts
-import mongoose from 'mongoose'
+import mongoose from "mongoose";
 
 export interface SocialMedia {
   website?: string;
@@ -19,7 +19,7 @@ export interface UserInfo {
 
 export interface User {
   _id: mongoose.Types.ObjectId;
-  name:string;
+  name: string;
   userName: string;
   email: string;
   password?: string;
@@ -32,86 +32,89 @@ export interface User {
   info?: UserInfo;
 }
 const userSchema = new mongoose.Schema<User>({
-    name:{
-        type:String
+  name: {
+    type: String,
+  },
+  userName: {
+    type: String,
+    required: [true, "Username is required"],
+    unique: true,
+    trim: true,
+    lowercase: true,
+    minlength: [3, "Username must be at least 3 characters"],
+    maxlength: [30, "Username cannot exceed 30 characters"],
+    match: [
+      /^[a-z0-9_]+$/,
+      "Username can only contain lowercase letters, numbers, and underscores",
+    ],
+    index: true,
+  },
+  email: {
+    type: String,
+    unique: true,
+    required: true,
+  },
+  password: {
+    type: String,
+  },
+  mobile: {
+    type: String,
+    trim: true,
+    default: "",
+  },
+  image: {
+    type: String,
+  },
+  imageID: {
+    type: String,
+  },
+  isVerified: {
+    type: Boolean,
+    default: false,
+  },
+  isEditInfo: {
+    type: Boolean,
+    default: false,
+  },
+  socialMedia: {
+    website: {
+      type: String,
     },
-    userName: {
-        type: String,
-        required: true
+    linkedin: {
+      type: String,
     },
-    email: {
-        type: String,
-        unique: true,
-        required: true
+    facebook: {
+      type: String,
     },
-    password: {
-        type: String,
+    github: {
+      type: String,
     },
-    mobile: {
-        type: String,
-        trim: true,
-        default: ""
+  },
+  info: {
+    title: {
+      type: String,
     },
-    image: {
-        type: String
+    address: {
+      type: String,
     },
-    imageID: {
-        type: String
+    city: {
+      type: String,
     },
-    isVerified: {
-        type: Boolean,
-        default: false
+    state: {
+      type: String,
     },
-    isEditInfo: {
-        type: Boolean,
-        default: false
+    bio: {
+      type: String,
     },
-    socialMedia: {
-        website: {
-            type: String
-        },
-        linkedin: {
-            type: String
-        },
-        facebook:{
-            type:String
-        },
-        github: {
-            type: String
-        },
+    company: {
+      type: String,
     },
-    info: {
-        title: {
-            type: String,
-        },
-        address: {
-            type: String,
+    country: {
+      type: String,
+    },
+  },
+});
 
-        },
-        city: {
-            type: String,
+const User = mongoose.model("User", userSchema);
 
-        },
-        state: {
-            type: String,
-
-        },
-        bio: {
-            type: String,
-
-        },
-        company: {
-            type: String,
-
-        },
-        country: {
-            type: String,
-
-        },
-    },
-
-})
-
-const User = mongoose.model("User", userSchema)
-
-export default User
+export default User;

@@ -15,14 +15,12 @@ import {
   Download,
   RotateCw,
   QrCode,
-  Sparkles,
   ExternalLink,
   Phone,
   Mail,
   Check,
-  Camera,
+  CircleUserRound,
   Copy,
-  Radio,
   X,
   Palette,
   UserX,
@@ -95,12 +93,7 @@ const THEMES: Record<string, Theme> = {
 export default function PublicProfile() {
   const params = useParams();
   const router = useRouter();
-  const id = params?.id;
-
-  const NEXT_PUBLIC_API_URL =
-    process.env.NEXT_PUBLIC_API_URL;
-  const FRONTEND_URL =
-    process.env.NEXT_PUBLIC_FRONTEND_URL;
+  const userName = params?.userName;
 
   const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -113,7 +106,7 @@ export default function PublicProfile() {
   const activeTheme = THEMES[themeKey];
 
   useEffect(() => {
-    if (!id) {
+    if (!userName) {
       setLoading(false);
       return;
     }
@@ -121,7 +114,7 @@ export default function PublicProfile() {
     const getUser = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${NEXT_PUBLIC_API_URL}/user/${id}`, {
+        const response = await axios.get(`api/user/find/${userName}`, {
           withCredentials: true,
         });
         setUserData(response?.data?.user);
@@ -134,7 +127,7 @@ export default function PublicProfile() {
     };
 
     getUser();
-  }, [id, NEXT_PUBLIC_API_URL]);
+  }, [userName]);
 
   // --- Parallax Mechanics ---
   const cardRef = useRef<HTMLDivElement>(null);
@@ -144,11 +137,11 @@ export default function PublicProfile() {
   const springConfig = { damping: 20, stiffness: 200 };
   const rotateX = useSpring(
     useTransform(mouseY, [-0.5, 0.5], [18, -18]),
-    springConfig
+    springConfig,
   );
   const rotateY = useSpring(
     useTransform(mouseX, [-0.5, 0.5], [-18, 18]),
-    springConfig
+    springConfig,
   );
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -164,11 +157,11 @@ export default function PublicProfile() {
 
     cardRef.current.style.setProperty(
       "--mouse-x",
-      `${(clientX / width) * 100}%`
+      `${(clientX / width) * 100}%`,
     );
     cardRef.current.style.setProperty(
       "--mouse-y",
-      `${(clientY / height) * 100}%`
+      `${(clientY / height) * 100}%`,
     );
   };
 
@@ -206,7 +199,8 @@ export default function PublicProfile() {
 
           <h2 className="text-xl font-bold text-white mb-1">User Not Found</h2>
           <p className="text-xs text-neutral-400 mb-6 leading-relaxed">
-            The profile you are looking for does not exist or the link might be invalid.
+            The profile you are looking for does not exist or the link might be
+            invalid.
           </p>
 
           <button
@@ -229,16 +223,13 @@ export default function PublicProfile() {
     nfcUid: userData?.nfcUid || "NXT-8842-PRO",
     email: userData?.email || "---",
     phone: userData?.mobile || "---",
-    website: userData?.socialMedia?.website || FRONTEND_URL,
+    website: userData?.socialMedia?.website || "---",
     location: userData?.info?.city || "Location not set",
     bio: userData?.info?.bio || "No bio available.",
     avatarUrl:
       userData?.image ||
       "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=600",
   };
-
- 
-  
 
   const GithubIcon = ({ className }: { className?: string }) => (
     <svg
@@ -347,7 +338,7 @@ END:VCARD`;
     link.href = url;
     link.setAttribute(
       "download",
-      `${profile.userName.replace(/\s+/g, "_")}.vcf`
+      `${profile.userName.replace(/\s+/g, "_")}.vcf`,
     );
     document.body.appendChild(link);
     link.click();
@@ -362,7 +353,7 @@ END:VCARD`;
 
   const copyProfileLink = () => {
     navigator.clipboard.writeText(
-      typeof window !== "undefined" ? window.location.href : profile.website
+      typeof window !== "undefined" ? window.location.href : profile.website,
     );
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -380,9 +371,16 @@ END:VCARD`;
       <div className="relative z-10 w-full max-w-md flex flex-col items-center gap-6">
         {/* Header Controls */}
         <header className="w-full flex items-center justify-between px-2">
-          <div className="flex items-center gap-2 font-mono text-sm tracking-wider uppercase text-neutral-400">
-            <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
-            <span>NFC ACTIVE</span>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-amber-400/10 border border-amber-400/20">
+              <div className="relative">
+                <CircleUserRound className="w-5 h-5 text-cyan-400" />
+              </div>
+            </div>
+
+            <span className="font-mono text-xs font-semibold tracking-[0.18em] uppercase text-neutral-300">
+              Digital ID
+            </span>
           </div>
 
           <div className="flex items-center gap-2 bg-neutral-900/80 backdrop-blur-md border border-white/10 rounded-full p-1.5 px-3">
@@ -453,12 +451,6 @@ END:VCARD`;
                       alt={profile.userName}
                       className="w-14 h-14 rounded-full object-cover border-2 border-white/20 shadow-md"
                     />
-                    <div className="absolute inset-0 rounded-full bg-black/50 backdrop-blur-[1px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                      <Camera className="w-4 h-4 text-white" />
-                    </div>
-                    <div className="absolute -bottom-1 -right-1 bg-black/80 rounded-full p-1 border border-white/20 z-10">
-                      <Sparkles className="w-3 h-3 text-amber-400" />
-                    </div>
                   </div>
 
                   <div>
@@ -473,11 +465,25 @@ END:VCARD`;
                 </div>
 
                 <div className="flex flex-col items-end">
-                  <span
-                    className={`text-[10px] font-mono uppercase px-2 py-0.5 rounded-md border ${activeTheme.badge}`}
+                  <div
+                    className={`relative p-2 rounded-xl border backdrop-blur-md ${activeTheme.badge}`}
                   >
-                    NXT PASS
-                  </span>
+                    {/* Glow */}
+                    <div className="absolute inset-0 rounded-xl bg-cyan-400/10 blur-xl" />
+
+                    {/* QR container */}
+                    <div className="relative p-1.5 bg-white rounded-lg shadow-lg">
+                      <QRCodeSVG
+                        value={profile.website}
+                        size={100}
+                        level="H"
+                        bgColor="#ffffff"
+                        fgColor="#08080c"
+                      />
+                    </div>
+
+                    {/* Scan indicator */}
+                  </div>
                 </div>
               </div>
 
@@ -673,7 +679,7 @@ END:VCARD`;
 
               <div className="p-4 bg-white rounded-2xl shadow-inner mb-5">
                 <QRCodeSVG
-                  value={`${FRONTEND_URL}/${profile.userName}`}
+                  value={`${process.env.FRONTEND_URL}/${profile.userName}`}
                   size={180}
                   level="H"
                 />
@@ -694,14 +700,6 @@ END:VCARD`;
           </div>
         )}
       </AnimatePresence>
-
-      {/* Edit Profile Modal */}
-      {showEditModal && (
-        <EditProfileModal
-          onClose={() => setShowEditModal(false)}
-          initialData={userData}
-        />
-      )}
     </main>
   );
 }
