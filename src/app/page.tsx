@@ -153,7 +153,7 @@ export default function NxtCardApp() {
     nfcUid: "NXT-8842-PRO", // delete
     email: userData?.email || "---",
     phone: userData?.mobile || "---",
-    website: userData?.socialMedia?.website || "---",
+    website: userData?.socialMedia?.website || process.env.FRONTEND_URL! || "---",
     github: userData?.socialMedia?.github || "---",
     linkedin: userData?.socialMedia?.linkedin || "---",
 
@@ -340,7 +340,7 @@ END:VCARD`;
         <div className="absolute -bottom-32 left-1/3 w-96 h-96 bg-amber-600/10 rounded-full blur-3xl" />
       </div>
 
-      <div className="relative z-10 w-full max-w-md flex flex-col items-center gap-6">
+      <div className="relative z-10 w-full max-w-xl flex flex-col items-center gap-6">
         {/* Top Header Controls */}
         <header className="w-full flex items-center justify-between px-2">
           <div className="flex items-center gap-2">
