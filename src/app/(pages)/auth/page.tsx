@@ -19,11 +19,11 @@ import { setUserData } from "@/redux/Slices/userSlice";
 import { useRouter } from "next/navigation";
 import { AppDispatch } from "@/redux/store";
 
-
 export default function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
+    name: "",
     userName: "",
     email: "",
     password: "",
@@ -53,12 +53,10 @@ export default function AuthForm() {
       };
 
       try {
-        const result = await axios.post(
-          `api/auth/login`,
-          loginData,
-          { withCredentials: true },
-        );
-        console.log("result login => ",result?.data?.user)
+        const result = await axios.post(`api/auth/login`, loginData, {
+          withCredentials: true,
+        });
+        console.log("result login => ", result?.data?.user);
         dispatch(setUserData(result?.data?.user));
         toast.success("login successful!");
         router.push("/");
@@ -69,6 +67,10 @@ export default function AuthForm() {
     }
 
     if (!isLogin) {
+      if (!formData.name || formData.name === null) {
+        toast.error("Name is required");
+        return;
+      }
       if (!formData.userName || formData.userName === null) {
         toast.error("UserName is required");
         return;
@@ -98,11 +100,9 @@ export default function AuthForm() {
       };
 
       try {
-        const result = await axios.post(
-          `api/auth/register`,
-          registerData,
-          { withCredentials: true },
-        );
+        const result = await axios.post(`api/auth/register`, registerData, {
+          withCredentials: true,
+        });
 
         toast.success("Register successful!");
         router.push("/auth");
@@ -181,19 +181,37 @@ export default function AuthForm() {
                   transition={{ duration: 0.2 }}
                   className="space-y-1.5 overflow-hidden"
                 >
-                  <label className="block text-xs font-medium text-neutral-300">
-                    Full Name
-                  </label>
-                  <div className="relative flex items-center">
-                    <User className="absolute left-3.5 w-4 h-4 text-neutral-500" />
-                    <input
-                      type="text"
-                      name="userName"
-                      value={formData.userName}
-                      onChange={handleChange}
-                      placeholder="Jane Doe"
-                      className="w-full bg-neutral-950/60 border border-neutral-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-neutral-500 outline-none transition"
-                    />
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-medium text-neutral-300">
+                      Name
+                    </label>
+                    <div className="relative flex items-center">
+                      <Mail className="absolute left-3.5 w-4 h-4 text-neutral-500" />
+                      <input
+                        type="text"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleChange}
+                        placeholder="jone"
+                        className="w-full bg-neutral-950/60 border border-neutral-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-neutral-500 outline-none transition"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-medium text-neutral-300">
+                      User Name
+                    </label>
+                    <div className="relative flex items-center">
+                      <Mail className="absolute left-3.5 w-4 h-4 text-neutral-500" />
+                      <input
+                        type="text"
+                        name="userName"
+                        value={formData.userName}
+                        onChange={handleChange}
+                        placeholder="jone123"
+                        className="w-full bg-neutral-950/60 border border-neutral-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-neutral-500 outline-none transition"
+                      />
+                    </div>
                   </div>
                 </motion.div>
               )}
