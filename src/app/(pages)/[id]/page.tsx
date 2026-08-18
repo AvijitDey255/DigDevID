@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   motion,
   useMotionValue,
@@ -19,22 +19,19 @@ import {
   ExternalLink,
   Phone,
   Mail,
-  MapPin,
-  Globe,
   Check,
   Camera,
   Copy,
   Radio,
   X,
   Palette,
+  UserX,
+  ArrowLeft,
+  Loader2,
 } from "lucide-react";
 import axios from "axios";
-import { logout } from "@/redux/Slices/userSlice";
-import toast from "react-hot-toast";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import EditProfileModal from "@/components/EditProfileModal";
-import { AppDispatch, RootState } from "@/redux/store";
-import { useDispatch, useSelector } from "react-redux";
 
 // --- Card Themes Definition ---
 interface Theme {
@@ -95,93 +92,153 @@ const THEMES: Record<string, Theme> = {
   },
 };
 
-export default function NxtCardApp() {
-  const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL;
-  const FRONTEND_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
-  // const userData = useAppSelector(
-  //   (state: RootState) => state?.user?.userData ?? null,
-  // ) as {
-  //   userName?: string;
-  //   email?: string;
-  //   mobile?: string;
-  //   image?: string;
-  //   isEditInfo?: boolean;
-  //   info?: {
-  //     title?: string;
-  //     company?: string;
-  //     city?: string;
-  //     bio?: string;
-  //   };
-  //   socialMedia?: {
-  //     website?: string;
-  //   };
-  // } | null;
-  
-  const  userData  = useSelector((state: RootState) => state.user.userData) as {
-    userName?: string;
-    email?: string;
-    mobile?: string;
-    image?: string;
-    isEditInfo?: boolean;
-    info?: {
-      title?: string;
-      company?: string;
-      city?: string;
-      bio?: string;
-    };
-    socialMedia?: {
-      website?: string;
-    };
-  } | null;
+export default function PublicProfile() {
+  const params = useParams();
+  const router = useRouter();
+  const id = params?.id;
 
-  
-  
+  const NEXT_PUBLIC_API_URL =
+    process.env.NEXT_PUBLIC_API_URL;
+  const FRONTEND_URL =
+    process.env.NEXT_PUBLIC_FRONTEND_URL;
+
+  const [userData, setUserData] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(true);
   const [themeKey, setThemeKey] = useState<string>("obsidian");
   const [isFlipped, setIsFlipped] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(userData?.isEditInfo);
-
+  const [showEditModal, setShowEditModal] = useState(false);
   const [copied, setCopied] = useState(false);
-  //logout
-  const [loading, setLoading] = useState(false);
-  const dispatch = useDispatch<AppDispatch>()
-  const router = useRouter();
-  const handleClick = async () => {
-    setLoading(true);
-    try {
-      const result = await axios.get(
-        `${NEXT_PUBLIC_API_URL as string}/auth/logout`,
-        { withCredentials: true },
-      );
-      dispatch(logout());
-      setLoading(false);
-      toast.success("logout successful!");
-      router.push("/auth");
-      return;
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "logout faileds");
-      setLoading(false);
-    }
-  };
 
   const activeTheme = THEMES[themeKey];
 
-  // User Profile State
+  useEffect(() => {
+    if (!id) {
+      setLoading(false);
+      return;
+    }
+
+    const getUser = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`${NEXT_PUBLIC_API_URL}/user/${id}`, {
+          withCredentials: true,
+        });
+        setUserData(response?.data?.user);
+      } catch (error) {
+        console.error("Failed to load user profile:", error);
+        setUserData(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getUser();
+  }, [id, NEXT_PUBLIC_API_URL]);
+
+  // --- Parallax Mechanics ---
+  const cardRef = useRef<HTMLDivElement>(null);
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const springConfig = { damping: 20, stiffness: 200 };
+  const rotateX = useSpring(
+    useTransform(mouseY, [-0.5, 0.5], [18, -18]),
+    springConfig
+  );
+  const rotateY = useSpring(
+    useTransform(mouseX, [-0.5, 0.5], [-18, 18]),
+    springConfig
+  );
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const clientX = e.clientX - rect.left;
+    const clientY = e.clientY - rect.top;
+
+    mouseX.set(clientX / width - 0.5);
+    mouseY.set(clientY / height - 0.5);
+
+    cardRef.current.style.setProperty(
+      "--mouse-x",
+      `${(clientX / width) * 100}%`
+    );
+    cardRef.current.style.setProperty(
+      "--mouse-y",
+      `${(clientY / height) * 100}%`
+    );
+  };
+
+  const handleMouseLeave = () => {
+    mouseX.set(0);
+    mouseY.set(0);
+  };
+
+  // --- 1. Loading State ---
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-[#08080c] text-white flex flex-col items-center justify-center p-4">
+        <Loader2 className="w-8 h-8 text-cyan-400 animate-spin mb-3" />
+        <p className="text-sm font-mono text-neutral-400">Loading Profile...</p>
+      </main>
+    );
+  }
+
+  // --- 2. User Not Found View ---
+  if (!userData) {
+    return (
+      <main className="min-h-screen bg-[#08080c] text-white flex flex-col items-center justify-center p-4 selection:bg-rose-500/30">
+        <div className="fixed inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-rose-600/10 rounded-full blur-3xl" />
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative z-10 w-full max-w-sm bg-neutral-900/70 border border-white/10 backdrop-blur-xl rounded-3xl p-8 text-center flex flex-col items-center shadow-2xl"
+        >
+          <div className="w-16 h-16 rounded-2xl bg-neutral-800/80 border border-white/10 flex items-center justify-center mb-4 shadow-inner">
+            <UserX className="w-8 h-8 text-neutral-400" />
+          </div>
+
+          <h2 className="text-xl font-bold text-white mb-1">User Not Found</h2>
+          <p className="text-xs text-neutral-400 mb-6 leading-relaxed">
+            The profile you are looking for does not exist or the link might be invalid.
+          </p>
+
+          <button
+            onClick={() => router.push("/")}
+            className="w-full py-3 px-4 bg-neutral-800 hover:bg-neutral-700 border border-white/10 rounded-xl text-xs font-mono font-medium transition flex items-center justify-center gap-2 text-neutral-200"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Return to Home</span>
+          </button>
+        </motion.div>
+      </main>
+    );
+  }
+
+  // --- Profile Data Mapping ---
   const profile = {
-    userName: userData?.userName,
+    userName: userData?.userName || "User",
     title: userData?.info?.title || "---",
     company: userData?.info?.company || "---",
-    nfcUid: "NXT-8842-PRO", // delete
+    nfcUid: userData?.nfcUid || "NXT-8842-PRO",
     email: userData?.email || "---",
     phone: userData?.mobile || "---",
-    website: userData?.socialMedia?.website || "---",
-    location: userData?.info?.city,
-    bio: userData?.info?.bio,
+    website: userData?.socialMedia?.website || FRONTEND_URL,
+    location: userData?.info?.city || "Location not set",
+    bio: userData?.info?.bio || "No bio available.",
     avatarUrl:
       userData?.image ||
       "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=600",
   };
 
+ 
+  
 
   const GithubIcon = ({ className }: { className?: string }) => (
     <svg
@@ -248,72 +305,29 @@ export default function NxtCardApp() {
     {
       label: "LinkedIn",
       icon: LinkedinIcon,
-      url: "https://linkedin.com",
+      url: userData?.socialMedia?.linkedin || "https://linkedin.com",
       color: "hover:text-blue-400",
     },
     {
       label: "GitHub",
       icon: GithubIcon,
-      url: "https://github.com",
+      url: userData?.socialMedia?.github || "https://github.com",
       color: "hover:text-neutral-200",
     },
     {
       label: "X (Twitter)",
       icon: TwitterIcon,
-      url: "https://twitter.com",
+      url: userData?.socialMedia?.twitter || "https://twitter.com",
       color: "hover:text-sky-400",
     },
     {
       label: "Instagram",
       icon: InstagramIcon,
-      url: "https://instagram.com",
+      url: userData?.socialMedia?.instagram || "https://instagram.com",
       color: "hover:text-pink-400",
     },
   ];
 
-  // --- 3D Mouse Parallax Mechanics ---
-  const cardRef = useRef<HTMLDivElement>(null);
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  const springConfig = { damping: 20, stiffness: 200 };
-  const rotateX = useSpring(
-    useTransform(mouseY, [-0.5, 0.5], [18, -18]),
-    springConfig,
-  );
-  const rotateY = useSpring(
-    useTransform(mouseX, [-0.5, 0.5], [-18, 18]),
-    springConfig,
-  );
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-    const clientX = e.clientX - rect.left;
-    const clientY = e.clientY - rect.top;
-
-    mouseX.set(clientX / width - 0.5);
-    mouseY.set(clientY / height - 0.5);
-
-    // Set CSS variable for glare effect
-    cardRef.current.style.setProperty(
-      "--mouse-x",
-      `${(clientX / width) * 100}%`,
-    );
-    cardRef.current.style.setProperty(
-      "--mouse-y",
-      `${(clientY / height) * 100}%`,
-    );
-  };
-
-  const handleMouseLeave = () => {
-    mouseX.set(0);
-    mouseY.set(0);
-  };
-
-  // --- Action Handlers ---
   const downloadVCard = () => {
     const vCardData = `BEGIN:VCARD
 VERSION:3.0
@@ -331,6 +345,10 @@ END:VCARD`;
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
+    link.setAttribute(
+      "download",
+      `${profile.userName.replace(/\s+/g, "_")}.vcf`
+    );
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -344,7 +362,7 @@ END:VCARD`;
 
   const copyProfileLink = () => {
     navigator.clipboard.writeText(
-      typeof window !== "undefined" ? window.location.href : profile.website,
+      typeof window !== "undefined" ? window.location.href : profile.website
     );
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -360,7 +378,7 @@ END:VCARD`;
       </div>
 
       <div className="relative z-10 w-full max-w-md flex flex-col items-center gap-6">
-        {/* Top Header Controls */}
+        {/* Header Controls */}
         <header className="w-full flex items-center justify-between px-2">
           <div className="flex items-center gap-2 font-mono text-sm tracking-wider uppercase text-neutral-400">
             <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
@@ -382,69 +400,19 @@ END:VCARD`;
                         : key === "gold"
                           ? "bg-amber-500"
                           : "bg-emerald-400"
-                  } ${themeKey === key ? "ring-2 ring-white ring-offset-2 ring-offset-black scale-110" : "opacity-60 hover:opacity-100"}`}
+                  } ${
+                    themeKey === key
+                      ? "ring-2 ring-white ring-offset-2 ring-offset-black scale-110"
+                      : "opacity-60 hover:opacity-100"
+                  }`}
                   title={THEMES[key].name}
                 />
               ))}
             </div>
           </div>
-          {/* logout button */}
-          <div className="relative group inline-block">
-            {/* Subtle Glow Effect */}
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-lg blur opacity-40 group-hover:opacity-100 transition duration-300" />
-
-            {/* Button Body */}
-            <motion.button
-              onClick={handleClick}
-              disabled={loading}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.96 }}
-              className="relative flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-slate-950 border border-slate-800 rounded-lg shadow-sm hover:border-slate-700 cursor-pointer disabled:cursor-not-allowed"
-            >
-              <AnimatePresence mode="wait" initial={false}>
-                {loading ? (
-                  <motion.div
-                    key="loading"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    className="flex items-center gap-1.5 text-slate-400"
-                  >
-                    <motion.div
-                      className="w-3.5 h-3.5 border-2 border-indigo-400/30 border-t-indigo-400 rounded-full"
-                      animate={{ rotate: 360 }}
-                      transition={{
-                        repeat: Infinity,
-                        duration: 0.7,
-                        ease: "linear",
-                      }}
-                    />
-                    <span>process...</span>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="idle"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex items-center gap-1.5"
-                  >
-                    <span>Logout</span>
-                    <motion.span
-                      className="text-slate-400 group-hover:text-white transition-colors"
-                      initial={{ x: 0 }}
-                      whileHover={{ x: 2 }}
-                    >
-                      →
-                    </motion.span>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.button>
-          </div>
         </header>
 
-        {/* --- 3D Interactive Card Showcase --- */}
+        {/* 3D Interactive Card */}
         <div className="w-full flex justify-center [perspective:1400px]">
           <motion.div
             ref={cardRef}
@@ -460,13 +428,12 @@ END:VCARD`;
             className={`relative w-full aspect-[1.586/1] rounded-2xl p-6 sm:p-7 border backdrop-blur-md cursor-pointer select-none transition-colors duration-500 ${activeTheme.cardBg} ${activeTheme.border}`}
             onClick={() => setIsFlipped(!isFlipped)}
           >
-            {/* Dynamic Glass / Sheen Overlay */}
             <div
               className="absolute inset-0 rounded-2xl pointer-events-none mix-blend-overlay transition-opacity duration-300"
               style={{ background: activeTheme.glare }}
             />
 
-            {/* FRONT FACE */}
+            {/* Front Face */}
             <div
               className={`absolute inset-0 p-6 sm:p-7 flex flex-col justify-between [backface-visibility:hidden] ${
                 isFlipped ? "pointer-events-none" : ""
@@ -476,8 +443,9 @@ END:VCARD`;
                 <div className="flex items-center gap-3">
                   <div
                     className="relative group cursor-pointer"
-                    onClick={() => {
-                      // Trigger your file upload or edit modal here
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowEditModal(true);
                     }}
                   >
                     <img
@@ -485,13 +453,9 @@ END:VCARD`;
                       alt={profile.userName}
                       className="w-14 h-14 rounded-full object-cover border-2 border-white/20 shadow-md"
                     />
-
-                    {/* Hover Overlay with Edit Icon */}
                     <div className="absolute inset-0 rounded-full bg-black/50 backdrop-blur-[1px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                       <Camera className="w-4 h-4 text-white" />
                     </div>
-
-                    {/* Badge */}
                     <div className="absolute -bottom-1 -right-1 bg-black/80 rounded-full p-1 border border-white/20 z-10">
                       <Sparkles className="w-3 h-3 text-amber-400" />
                     </div>
@@ -530,7 +494,7 @@ END:VCARD`;
               </div>
             </div>
 
-            {/* BACK FACE */}
+            {/* Back Face */}
             <div
               className={`absolute inset-0 p-6 sm:p-7 flex flex-col justify-between [transform:rotateY(180deg)] [backface-visibility:hidden] ${
                 !isFlipped ? "pointer-events-none" : ""
@@ -539,10 +503,10 @@ END:VCARD`;
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-400">
-                    Smart Contact123
+                    Smart Contact
                   </p>
                   <p className="text-xs font-mono text-neutral-200 mt-0.5">
-                    {profile.nfcUid || "frfrg"}
+                    {profile.nfcUid}
                   </p>
                 </div>
                 <button
@@ -582,17 +546,16 @@ END:VCARD`;
           </motion.div>
         </div>
 
-        {/* Primary Action Buttons */}
+        {/* Action Buttons */}
         <div className="grid grid-cols-2 gap-3 w-full">
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            // onClick={downloadVCard}
+            onClick={downloadVCard}
             className={`flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl font-medium text-sm text-black bg-gradient-to-r ${activeTheme.accent} shadow-lg transition duration-200`}
-            onClick={() => setShowEditModal(true)}
           >
             <Download className="w-4 h-4" />
-            <span>Edit Info</span>
+            <span>Download</span>
           </motion.button>
 
           <motion.button
@@ -606,7 +569,7 @@ END:VCARD`;
           </motion.button>
         </div>
 
-        {/* Contact Quick-Actions Hub */}
+        {/* Contact Links */}
         <div className="w-full bg-neutral-900/60 backdrop-blur-md border border-white/10 rounded-2xl p-4 flex flex-col gap-3">
           <a
             href={`mailto:${profile.email}`}
@@ -626,25 +589,27 @@ END:VCARD`;
             <ExternalLink className="w-4 h-4 text-neutral-500 group-hover:text-white transition" />
           </a>
 
-          <a
-            href={`tel:${profile.phone}`}
-            className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 transition group"
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-neutral-800 text-neutral-300">
-                <Phone className="w-4 h-4" />
+          {profile.phone && profile.phone !== "---" && (
+            <a
+              href={`tel:${profile.phone}`}
+              className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 transition group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-neutral-800 text-neutral-300">
+                  <Phone className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs text-neutral-400">Direct Line</p>
+                  <p className="text-sm font-medium text-white">
+                    {profile.phone}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-xs text-neutral-400">Direct Line</p>
-                <p className="text-sm font-medium text-white">
-                  {profile.phone}
-                </p>
-              </div>
-            </div>
-            <ExternalLink className="w-4 h-4 text-neutral-500 group-hover:text-white transition" />
-          </a>
+              <ExternalLink className="w-4 h-4 text-neutral-500 group-hover:text-white transition" />
+            </a>
+          )}
 
-          {/* Social Hub Links */}
+          {/* Social Icons */}
           <div className="grid grid-cols-4 gap-2 pt-2">
             {socialLinks.map((s, idx) => {
               const Icon = s.icon;
@@ -666,7 +631,7 @@ END:VCARD`;
           </div>
         </div>
 
-        {/* Share Profile Link Footer */}
+        {/* Copy Share Link */}
         <button
           onClick={copyProfileLink}
           className="flex items-center gap-2 text-xs font-mono text-neutral-400 hover:text-white transition py-2"
@@ -680,7 +645,7 @@ END:VCARD`;
         </button>
       </div>
 
-      {/* --- QR Code Share Modal --- */}
+      {/* QR Code Modal */}
       <AnimatePresence>
         {showQrModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
@@ -730,11 +695,11 @@ END:VCARD`;
         )}
       </AnimatePresence>
 
-      {/* info edit */}
+      {/* Edit Profile Modal */}
       {showEditModal && (
         <EditProfileModal
           onClose={() => setShowEditModal(false)}
-          initialData={userData ?? undefined}
+          initialData={userData}
         />
       )}
     </main>
