@@ -471,25 +471,16 @@ END:VCARD`;
                     <img
                       src={profile.avatarUrl}
                       alt={profile.userName}
-                      className="w-14 h-14 rounded-full object-cover border-2 border-white/20 shadow-md"
+                      className="w-18 h-18 rounded-full object-cover border-2 border-white/20 shadow-md"
                     />
 
-                    {/* Hover Overlay with Edit Icon */}
-                    <div className="absolute inset-0 rounded-full bg-black/50 backdrop-blur-[1px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                      <Camera className="w-4 h-4 text-white" />
-                    </div>
-
-                    {/* Badge */}
-                    <div className="absolute -bottom-1 -right-1 bg-black/80 rounded-full p-1 border border-white/20 z-10">
-                      <Sparkles className="w-3 h-3 text-amber-400" />
-                    </div>
                   </div>
 
                   <div>
-                    <h2 className="font-bold text-lg leading-tight tracking-tight">
+                    <h2 className="font-bold text-2xl leading-tight tracking-tight">
                       {profile.userName}
                     </h2>
-                    <p className="text-xs text-neutral-400">{profile.title}</p>
+                    <p className="text-l text-neutral-400">{profile.title}</p>
                     <p className="text-[11px] font-medium tracking-wide bg-gradient-to-r bg-clip-text text-transparent from-neutral-200 to-neutral-400">
                       {profile.company}
                     </p>
@@ -520,10 +511,10 @@ END:VCARD`;
               </div>
 
               <div className="space-y-2">
-                <p className="text-xs text-neutral-300 line-clamp-2 leading-relaxed opacity-90">
+                <p className="text-md text-neutral-300 line-clamp-2 leading-relaxed opacity-90">
                   {profile.bio}
                 </p>
-                <div className="flex items-center justify-between pt-2 border-t border-white/10 text-xs text-neutral-400 font-mono">
+                <div className="flex items-center justify-between pt-2 border-t border-white/10 text-md text-neutral-400 font-mono">
                   <span>{profile.location}</span>
                   <span className="flex items-center gap-1 text-[11px] text-neutral-400">
                     <RotateCw className="w-3 h-3" /> Tap to Flip
