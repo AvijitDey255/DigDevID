@@ -10,6 +10,7 @@ export async function GET(
     await dbConnect();
 
     const { userName } = await params;
+    console.log("userName =>>> ",userName)
 
     const user = await User.findOne({userName});
 

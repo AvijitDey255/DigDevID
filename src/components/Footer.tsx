@@ -3,7 +3,8 @@
 import React from "react";
 import Link from "next/link";
 import { Heart, ShieldCheck, FileText, User } from "lucide-react";
-
+import Image from "next/image";
+import Logo from '@/images/logo.png';
 export default function Footer() {
   return (
     <footer className="w-full max-w-xl mx-auto px-4 pb-6 pt-8">
@@ -12,12 +13,12 @@ export default function Footer() {
         {/* Brand */}
         <div className="text-center mb-5">
           <div className="flex items-center justify-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center">
-              <User className="w-4 h-4 text-white" />
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center overflow-hidden">
+              <Image src={Logo} alt="Logo" width={32} height={32} />
             </div>
 
             <span className="text-sm font-bold text-white">
-              Digital ID
+              DigDevID
             </span>
           </div>
 
@@ -74,7 +75,7 @@ export default function Footer() {
 
         {/* Copyright */}
         <div className="flex items-center justify-center gap-1 mt-5 text-[10px] text-neutral-600">
-          © {new Date().getFullYear()} Veyro
+          © {new Date().getFullYear()} DigDevID
           <span>•</span>
           Made with
           <Heart className="w-3 h-3 text-red-500 fill-red-500" />

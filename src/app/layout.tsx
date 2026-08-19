@@ -18,9 +18,9 @@ const geistMono = Geist_Mono({
 
 
 export const metadata: Metadata = {
-  title: "Digital ID",
+  title: "DigDevID",
   description: "Create and share your digital profile.",
-  applicationName: "Digital ID",
+  applicationName: "DigDevID",
 
   authors: [
     {
@@ -35,9 +35,9 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: "Digital ID",
+    title: "DigDevID",
     description: "Your digital profile, portfolio and identity.",
-    siteName: "Digital ID",
+    siteName: "DigDevID",
     type: "website",
     images: ["/logo.png"],
   },

@@ -21,6 +21,7 @@ import { AppDispatch } from "@/redux/store";
 
 export default function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -38,6 +39,7 @@ export default function AuthForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (isLogin) {
       if (!formData.email || formData.email === null) {
         toast.error("Email is required");
@@ -53,15 +55,17 @@ export default function AuthForm() {
       };
 
       try {
-        const result = await axios.post(`api/auth/login`, loginData, {
+        setLoading(true);
+        const result = await axios.post(`/api/auth/login`, loginData, {
           withCredentials: true,
         });
-        console.log("result login => ", result?.data?.user);
         dispatch(setUserData(result?.data?.user));
         toast.success("login successful!");
+        setLoading(false);
         router.push("/");
         return;
       } catch (error: any) {
+        setLoading(false);
         toast.error(error.response?.data?.message || "login faileds");
       }
     }
@@ -69,27 +73,33 @@ export default function AuthForm() {
     if (!isLogin) {
       if (!formData.name || formData.name === null) {
         toast.error("Name is required");
+
         return;
       }
       if (!formData.userName || formData.userName === null) {
         toast.error("UserName is required");
+
         return;
       }
       if (!formData.email || formData.email === null) {
         toast.error("Email is required");
+
         return;
       }
       if (!formData.password || formData.password === null) {
         toast.error("Password is required");
+
         return;
       }
       if (!formData.confirmPassword || formData.confirmPassword === null) {
         toast.error("ConfirmPassword is required");
+
         return;
       }
 
       if (formData.password !== formData.confirmPassword) {
         toast.error("Password not Match");
+
         return;
       }
 
@@ -100,14 +110,18 @@ export default function AuthForm() {
       };
 
       try {
-        const result = await axios.post(`api/auth/register`, registerData, {
+        setLoading(true);
+        const result = await axios.post(`/api/auth/register`, registerData, {
           withCredentials: true,
         });
 
         toast.success("Register successful!");
+        setLoading(false);
         router.push("/auth");
+
         return;
       } catch (error: any) {
+        setLoading(false);
         toast.error(error.response?.data?.message || "login faileds");
       }
     }
@@ -305,10 +319,28 @@ export default function AuthForm() {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full mt-2 flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-medium text-sm rounded-xl shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 active:scale-[0.99] transition duration-200"
+              disabled={loading}
+              className="w-full mt-2 flex items-center justify-center gap-2 py-3 px-4 
+    bg-gradient-to-r from-indigo-500 to-purple-600 
+    hover:from-indigo-600 hover:to-purple-700 
+    disabled:opacity-70 disabled:cursor-not-allowed
+    text-white font-medium text-sm rounded-xl 
+    shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 
+    active:scale-[0.99] transition duration-200"
             >
-              <span>{isLogin ? "Sign In" : "Create Account"}</span>
-              <ArrowRight className="w-4 h-4" />
+              {loading ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span>
+                    {isLogin ? "Signing in..." : "Creating account..."}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span>{isLogin ? "Sign In" : "Create Account"}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </button>
           </form>
 

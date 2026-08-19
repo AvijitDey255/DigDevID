@@ -30,7 +30,8 @@ import {
 import axios from "axios";
 import { useParams, useRouter } from "next/navigation";
 import EditProfileModal from "@/components/EditProfileModal";
-
+import Logo from "@/images/logo.png";
+import Image from "next/image";
 // --- Card Themes Definition ---
 interface Theme {
   id: string;
@@ -114,9 +115,8 @@ export default function PublicProfile() {
     const getUser = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`api/user/find/${userName}`, {
-          withCredentials: true,
-        });
+        const response = await axios.get(`/api/user/find/${userName}`);
+        console.log(response?.data?.user);
         setUserData(response?.data?.user);
       } catch (error) {
         console.error("Failed to load user profile:", error);
@@ -224,7 +224,7 @@ export default function PublicProfile() {
     email: userData?.email || "---",
     phone: userData?.mobile || "---",
     website: userData?.socialMedia?.website || process.env.FRONTEND_URL,
-    location: userData?.info?.city || "Location not set",
+    location: `${userData?.info?.country},${userData?.info?.city}`,
     bio: userData?.info?.bio || "No bio available.",
     avatarUrl:
       userData?.image ||
@@ -372,14 +372,12 @@ END:VCARD`;
         {/* Header Controls */}
         <header className="w-full flex items-center justify-between px-2">
           <div className="flex items-center gap-2">
-            <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-amber-400/10 border border-amber-400/20">
-              <div className="relative">
-                <CircleUserRound className="w-5 h-5 text-cyan-400" />
-              </div>
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center overflow-hidden">
+              <Image src={Logo} alt="Logo" width={32} height={32} />
             </div>
 
-            <span className="font-mono text-xs font-semibold tracking-[0.18em] uppercase text-neutral-300">
-              Digital ID
+            <span className="font-mono text-sm font-bold text-neutral-300 text-white">
+              DigDevID
             </span>
           </div>
 
@@ -449,15 +447,15 @@ END:VCARD`;
                     <img
                       src={profile.avatarUrl}
                       alt={profile.userName}
-                      className="w-14 h-14 rounded-full object-cover border-2 border-white/20 shadow-md"
+                      className="w-18 h-18 rounded-full object-cover border-2 border-white/20 shadow-md"
                     />
                   </div>
 
                   <div>
-                    <h2 className="font-bold text-lg leading-tight tracking-tight">
+                    <h2 className="font-bold text-2xl leading-tight tracking-tight">
                       {profile.userName}
                     </h2>
-                    <p className="text-xs text-neutral-400">{profile.title}</p>
+                    <p className="text-md text-neutral-400">{profile.title}</p>
                     <p className="text-[11px] font-medium tracking-wide bg-gradient-to-r bg-clip-text text-transparent from-neutral-200 to-neutral-400">
                       {profile.company}
                     </p>
@@ -472,10 +470,10 @@ END:VCARD`;
                     <div className="absolute inset-0 rounded-xl bg-cyan-400/10 blur-xl" />
 
                     {/* QR container */}
-                    <div className="relative p-1.5 bg-white rounded-lg shadow-lg">
+                    <div className="relative p-2 bg-white rounded-lg shadow-lg">
                       <QRCodeSVG
                         value={profile.website}
-                        size={100}
+                        size={120}
                         level="H"
                         bgColor="#ffffff"
                         fgColor="#08080c"
@@ -488,10 +486,10 @@ END:VCARD`;
               </div>
 
               <div className="space-y-2">
-                <p className="text-xs text-neutral-300 line-clamp-2 leading-relaxed opacity-90">
+                <p className="text-md text-neutral-300 line-clamp-2 leading-relaxed opacity-90">
                   {profile.bio}
                 </p>
-                <div className="flex items-center justify-between pt-2 border-t border-white/10 text-xs text-neutral-400 font-mono">
+                <div className="flex items-center justify-between pt-2 border-t border-white/10 text-md text-neutral-400 font-mono">
                   <span>{profile.location}</span>
                   <span className="flex items-center gap-1 text-[11px] text-neutral-400">
                     <RotateCw className="w-3 h-3" /> Tap to Flip

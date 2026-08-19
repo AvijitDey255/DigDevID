@@ -33,7 +33,8 @@ import { useRouter } from "next/navigation";
 import EditProfileModal from "@/components/EditProfileModal";
 import { AppDispatch, RootState } from "@/redux/store";
 import { useDispatch, useSelector } from "react-redux";
-
+import Logo from "@/images/logo.png";
+import Image from "next/image";
 // --- Card Themes Definition ---
 interface Theme {
   id: string;
@@ -107,6 +108,8 @@ export default function NxtCardApp() {
       title?: string;
       company?: string;
       city?: string;
+      country?:string;
+      state?:string;
       bio?: string;
     };
     socialMedia?: {
@@ -153,11 +156,12 @@ export default function NxtCardApp() {
     nfcUid: "NXT-8842-PRO", // delete
     email: userData?.email || "---",
     phone: userData?.mobile || "---",
-    website: userData?.socialMedia?.website || process.env.FRONTEND_URL! || "---",
+    website:
+      userData?.socialMedia?.website || process.env.FRONTEND_URL! || "---",
     github: userData?.socialMedia?.github || "---",
     linkedin: userData?.socialMedia?.linkedin || "---",
 
-    location: userData?.info?.city,
+    location: `${userData?.info?.country},${userData?.info?.city}`,
     bio: userData?.info?.bio,
     avatarUrl:
       userData?.image ||
@@ -344,14 +348,12 @@ END:VCARD`;
         {/* Top Header Controls */}
         <header className="w-full flex items-center justify-between px-2">
           <div className="flex items-center gap-2">
-            <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-amber-400/10 border border-amber-400/20">
-              <div className="relative">
-                <CircleUserRound className="w-5 h-5 text-cyan-400" />
-              </div>
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center overflow-hidden">
+              <Image src={Logo} alt="Logo" width={32} height={32} />
             </div>
 
-            <span className="font-mono text-xs font-semibold tracking-[0.18em] uppercase text-neutral-300">
-              Digital ID
+            <span className="font-mono text-sm font-bold text-neutral-300 text-white">
+              DigDevID
             </span>
           </div>
 
@@ -473,7 +475,6 @@ END:VCARD`;
                       alt={profile.userName}
                       className="w-18 h-18 rounded-full object-cover border-2 border-white/20 shadow-md"
                     />
-
                   </div>
 
                   <div>
@@ -495,10 +496,10 @@ END:VCARD`;
                     <div className="absolute inset-0 rounded-xl bg-cyan-400/10 blur-xl" />
 
                     {/* QR container */}
-                    <div className="relative p-1.5 bg-white rounded-lg shadow-lg">
+                    <div className="relative p-2 bg-white rounded-lg shadow-lg">
                       <QRCodeSVG
                         value={profile.website}
-                        size={100}
+                        size={120}
                         level="H"
                         bgColor="#ffffff"
                         fgColor="#08080c"
