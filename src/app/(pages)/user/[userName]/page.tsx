@@ -371,7 +371,7 @@ END:VCARD`;
       <div className="relative z-10 w-full max-w-xl flex flex-col items-center gap-6">
         {/* Header Controls */}
         <header className="w-full flex items-center justify-between px-2">
-          <div className="flex items-center gap-2">
+          <div onClick={()=>router.push("/")} className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center overflow-hidden">
               <Image src={Logo} alt="Logo" width={32} height={32} />
             </div>

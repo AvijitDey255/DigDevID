@@ -260,7 +260,6 @@ export default function NxtCardApp() {
   const cardRef = useRef<HTMLDivElement>(null);
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
-
   const springConfig = { damping: 20, stiffness: 200 };
   const rotateX = useSpring(
     useTransform(mouseY, [-0.5, 0.5], [18, -18]),
@@ -347,7 +346,7 @@ END:VCARD`;
       <div className="relative z-10 w-full max-w-xl flex flex-col items-center gap-6">
         {/* Top Header Controls */}
         <header className="w-full flex items-center justify-between px-2">
-          <div className="flex items-center gap-2">
+          <div onClick={()=>router.push("/")} className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center overflow-hidden">
               <Image src={Logo} alt="Logo" width={32} height={32} />
             </div>
