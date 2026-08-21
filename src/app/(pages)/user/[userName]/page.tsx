@@ -462,7 +462,7 @@ END:VCARD`;
                   </div>
                 </div>
 
-                <div className="flex flex-col items-end">
+                <div className="lg:flex flex-colb hidden items-end">
                   <div
                     className={`relative p-2 rounded-xl border backdrop-blur-md ${activeTheme.badge}`}
                   >

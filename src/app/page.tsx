@@ -488,7 +488,7 @@ END:VCARD`;
                   </div>
                 </div>
 
-                <div className="flex flex-col items-end">
+                <div className="lg:flex flex-colb hidden items-end ">
                   <div
                     className={`relative p-2 rounded-xl border backdrop-blur-md ${activeTheme.badge}`}
                   >
@@ -496,7 +496,7 @@ END:VCARD`;
                     <div className="absolute inset-0 rounded-xl bg-cyan-400/10 blur-xl" />
 
                     {/* QR container */}
-                    <div className="relative p-2 bg-white rounded-lg shadow-lg">
+                    <div className="relative p-2 bg-white  rounded-lg shadow-lg">
                       <QRCodeSVG
                         value={profile.website}
                         size={120}
